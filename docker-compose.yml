@@ -1,0 +1,65 @@
+version: '3'
+
+services:
+
+#Contenedor mongo
+  mongo:
+    image: mongo
+    container_name: mi-mongoAPF
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongo-vol:/data/db
+    networks:
+      mongo-node-net:
+        ipv4_address: 172.40.0.10
+
+#Contenedor node
+  nodejs:
+    container_name: mi-nodejsAPF
+    #NOMBRE DE LA IMAGEN QUE CREAREMOS CON EL dockerfile
+    image: adrian-imagen
+    ports:
+      - "8080:8080"
+    networks:
+      mongo-node-net:
+        ipv4_address: 172.40.0.11
+      node-nginx-net:
+        ipv4_address: 172.80.0.10
+
+
+#Contenedor nginx
+  nginx:
+    image: nginx:stable-perl
+    container_name: mi-nginxAPF
+
+    ports:
+      - "8081:80"
+
+    #variables entorno
+    environment:
+      - NGINX_HOST=foobar.com
+      - NGINX_PORT=80
+    networks:
+      node-nginx-net: 
+        ipv4_address: 172.80.0.11
+
+volumes:
+      mongo-vol:
+networks:
+    mongo-node-net:
+      driver: bridge
+      ipam:
+          config:
+          - subnet: 172.40.0.0/16
+    node-nginx-net:
+        driver: bridge
+        ipam:
+            driver: default
+            config:
+              - subnet: 172.80.0.0/16
+
+
+      
